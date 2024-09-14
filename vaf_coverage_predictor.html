@@ -56,9 +56,9 @@
         <!-- VAF Slider -->
         <div class="slider-box">
             <label for="vafSlider">VAF: 
-		<input type="number" id="vafValue" value="0.1" step="0.01" min="0" max="1">
+		<input type="number" id="vafValue" value="0.1" step="0.005" min="0" max="1">
 	    </label>
-            <input type="range" min="0.005" max="0.995" step="0.005" value="0.1" id="vafSlider">
+            <input type="range" min="0.001" max="0.995" step="0.01" value="0.1" id="vafSlider">
         </div>
 
         <!-- Coverage Slider -->
@@ -79,15 +79,8 @@
 	<p> After setting your target VAF and coverage, mouse-over the plot and the y-axis number holds the probability
 	any given allele will have at least that much x-axis coverage.<br/> 
 	For example, at VAF=0.1 and Coverage=100, there is a 76.3% chance an allele will be supported by ≥7 reads</p>
-	<p>Note that javascript seems to break when the coverage is high and the VAF is > 0.1, for some reason.</p>
     </div>
     <script>
-	// Stirling's approximation for large factorials
-	function stirlingFactorial(n) {
-	    if (n === 0 || n === 1) return 1;
-	    return Math.sqrt(2 * Math.PI * n) * Math.pow(n / Math.E, n);
-	}
-
 	// Source: https://github.com/royhzq/betajs
 	function lnBetaFunc(a, b) {
 	    // Log Beta Function: ln(Beta(a, b))
@@ -106,30 +99,46 @@
 	}
 	
 	function logCombinations(n, k) {
+	    // Handle edge cases where binomial coefficient is 1
+	    if (k === 0 || k === n) return 0;
+
+	    // Use symmetry property C(n, k) == C(n, n-k) to minimize the number of iterations
+	    if (k > n - k) k = n - k;
+
 	    let logResult = 0;
 
+	    // Compute the sum of logarithms for n choose k
 	    for (let i = 0; i < k; i++) {
 		logResult += Math.log(n - i) - Math.log(i + 1);
 	    }
 
 	    return logResult;
 	}
-	
+
+	function logSumExp(logA, logB) {
+	    if (logA === -Infinity) return logB;
+	    if (logB === -Infinity) return logA;
+	    const maxLog = Math.max(logA, logB);
+	    return maxLog + Math.log(Math.exp(logA - maxLog) + Math.exp(logB - maxLog));
+	}
+
 	function generateData(vaf, coverage) {
 	    const min_reads = [];
 	    const probabilities = [];
-	    let prob = 0;
+	    let prob = -Infinity;
 	    const alpha = coverage * vaf + 1;
 	    const beta = coverage * (1-vaf) + 1;
-	    const beta_term2 = Math.exp(lnBetaFunc(alpha, beta));
+	    const beta_term2 = lnBetaFunc(alpha, beta);
 
-            for (let k = 1; k <= coverage; k++) {
-		const binom_coeff = Math.exp(logCombinations(coverage, k));
-		const beta_term1 = Math.exp(lnBetaFunc(k + alpha, coverage - k + beta));
-		const beta_term = beta_term1 / beta_term2;
-		prob += binom_coeff * beta_term;
+            for (let k = 0; k <= coverage; k++) {
+		const binom_coeff = logCombinations(coverage, k);
+		const beta_term1 = lnBetaFunc(k + alpha, coverage - k + beta);
+		const beta_term = beta_term1 - beta_term2;
+		const term = binom_coeff + beta_term;
+		prob = logSumExp(prob, term);
+
                 min_reads.push(k);
-                probabilities.push(1 - prob);
+                probabilities.push(1 - Math.exp(prob));
 	    }
             return { min_reads, probabilities };
 	}
@@ -161,14 +170,15 @@
 	// Event listeners for sliders
 	document.getElementById('vafSlider').addEventListener('input', function () {
 	    vaf = parseFloat(this.value);
-	    document.getElementById('vafValue').value = vaf.toFixed(2); // Keep in sync with slider
+	    document.getElementById('vafValue').value = vaf.toFixed(3); // Keep in sync with slider
 	    updatePlot();
 	});
 
 	document.getElementById('vafValue').addEventListener('input', function () {
 	    let inputValue = parseFloat(this.value);
-	    if (inputValue <= 0.005) {
-		inputValue = 0.005;
+	    if (inputValue <= 0.001) {
+		inputValue = 0.001;
+		document.getElementById('vafValue').value = inputValue.toFixed(3); // Keep in sync with slider
 	    }
 	    if (inputValue >= 0.995) {
 		inputValue = 0.995;
