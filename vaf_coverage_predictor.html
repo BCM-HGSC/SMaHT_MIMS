@@ -58,7 +58,7 @@
             <label for="vafSlider">VAF: 
 		<input type="number" id="vafValue" value="0.1" step="0.01" min="0" max="1">
 	    </label>
-            <input type="range" min="0" max="1" step="0.01" value="0.1" id="vafSlider">
+            <input type="range" min="0.005" max="0.995" step="0.005" value="0.1" id="vafSlider">
         </div>
 
         <!-- Coverage Slider -->
@@ -66,7 +66,7 @@
             <label for="coverageSlider">Coverage: 
 		<input type="number" id="coverageValue", value="100" step="10", min="100" max="1000">
 	    </label>
-            <input type="range" min="1" max="1000" step="1" value="171" id="coverageSlider">
+            <input type="range" min="1" max="1000" step="1" value="100" id="coverageSlider">
         </div>
     </div>
 
@@ -86,19 +86,6 @@
 	function stirlingFactorial(n) {
 	    if (n === 0 || n === 1) return 1;
 	    return Math.sqrt(2 * Math.PI * n) * Math.pow(n / Math.E, n);
-	}
-
-	// Log of combinations: ln(n choose k) = ln(n!) - ln(k!) - ln((n-k)!)
-	function lnCombinations(n, k) {
-	    return Math.log(stirlingFactorial(n)) - Math.log(stirlingFactorial(k)) -
-		Math.log(stirlingFactorial(n - k));
-	}
-
-	function combinations(n, k) {
-	    function factorial(n) {
-		return n <= 1 ? 1 : n * factorial(n - 1);
-	    }
-	    return factorial(n) / (factorial(k) * factorial(n - k));
 	}
 
 	// Source: https://github.com/royhzq/betajs
@@ -180,8 +167,11 @@
 
 	document.getElementById('vafValue').addEventListener('input', function () {
 	    let inputValue = parseFloat(this.value);
-	    if (inputValue <= 0 || inputValue >= 1) { // Ensure valid range for VAF
-		inputValue = 0.5;
+	    if (inputValue <= 0.005) {
+		inputValue = 0.005;
+	    }
+	    if (inputValue >= 0.995) {
+		inputValue = 0.995;
 	    }
 	    document.getElementById('vafSlider').value = inputValue;
 	    vaf = inputValue
@@ -196,8 +186,11 @@
 
 	document.getElementById('coverageValue').addEventListener('input', function () {
 	    let inputValue = parseFloat(this.value);
-	    if (inputValue < 1 || inputValue > 1000) { // Ensure valid range for covearage
-		inputValue = 500;
+	    if (inputValue < 1) {
+		inputValue = 1;
+	    }
+	    if (inputValue > 1000) {
+		inputValue = 1000;
 	    }
 	    coverage = inputValue;
 	    document.getElementById('coverageSlider').value = inputValue;
