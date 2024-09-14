@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive VAF and Coverage Plot</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        /* Center the content on the page */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Container for sliders */
+        .sliders-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .slider-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            width: 150px;
+            margin: 0 10px;
+        }
+
+        .slider-box label {
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+        }
+
+        #plot {
+            margin-top: 20px;
+            width: 80%; /* Ensure the plot is centered and responsive */
+        }
+    </style>
+</head>
+<body>
+    <h1>Interactive Plot for VAF and Coverage</h1>
+    
+    <!-- Container for sliders -->
+    <div class="sliders-wrapper">
+        <!-- VAF Slider -->
+        <div class="slider-box">
+            <label for="vafSlider">VAF: 
+		<input type="number" id="vafValue" value="0.1" step="0.01" min="0" max="1">
+	    </label>
+            <input type="range" min="0" max="1" step="0.01" value="0.1" id="vafSlider">
+        </div>
+
+        <!-- Coverage Slider -->
+        <div class="slider-box">
+            <label for="coverageSlider">Coverage: 
+		<input type="number" id="coverageValue", value="100" step="10", min="100" max="1000">
+	    </label>
+            <input type="range" min="1" max="1000" step="1" value="171" id="coverageSlider">
+        </div>
+    </div>
+
+    <!-- Plot container -->
+    <div id="plot"></div>
+    <br/>
+    <div>
+	<p> This plot uses a beta-binomial distribution to plot the probability of sequencing an allele given its
+	variant allele frequency (VAF) and the depth of coverage</p>
+	<p> After setting your target VAF and coverage, mouse-over the plot and the y-axis number holds the probability
+	any given allele will have at least that much x-axis coverage.<br/> 
+	For example, at VAF=0.1 and Coverage=100, there is a 76.3% chance an allele will be supported by ≥7 reads</p>
+	<p>Note that javascript seems to break when the coverage is high and the VAF is > 0.1, for some reason.</p>
+    </div>
+    <script>
+	// Stirling's approximation for large factorials
+	function stirlingFactorial(n) {
+	    if (n === 0 || n === 1) return 1;
+	    return Math.sqrt(2 * Math.PI * n) * Math.pow(n / Math.E, n);
+	}
+
+	// Log of combinations: ln(n choose k) = ln(n!) - ln(k!) - ln((n-k)!)
+	function lnCombinations(n, k) {
+	    return Math.log(stirlingFactorial(n)) - Math.log(stirlingFactorial(k)) -
+		Math.log(stirlingFactorial(n - k));
+	}
+
+	function combinations(n, k) {
+	    function factorial(n) {
+		return n <= 1 ? 1 : n * factorial(n - 1);
+	    }
+	    return factorial(n) / (factorial(k) * factorial(n - k));
+	}
+
+	// Source: https://github.com/royhzq/betajs
+	function lnBetaFunc(a, b) {
+	    // Log Beta Function: ln(Beta(a, b))
+	    let foo = 0.0;
+
+	    for (let i = 0; i < a - 2; i++) {
+		foo += Math.log(a - 1 - i);
+	    }
+	    for (let i = 0; i < b - 2; i++) {
+		foo += Math.log(b - 1 - i);
+	    }
+	    for (let i = 0; i < a + b - 2; i++) {
+		foo -= Math.log(a + b - 1 - i);
+	    }
+	    return foo;
+	}
+	
+	function logCombinations(n, k) {
+	    let logResult = 0;
+
+	    for (let i = 0; i < k; i++) {
+		logResult += Math.log(n - i) - Math.log(i + 1);
+	    }
+
+	    return logResult;
+	}
+	
+	function generateData(vaf, coverage) {
+	    const min_reads = [];
+	    const probabilities = [];
+	    let prob = 0;
+	    const alpha = coverage * vaf + 1;
+	    const beta = coverage * (1-vaf) + 1;
+	    const beta_term2 = Math.exp(lnBetaFunc(alpha, beta));
+
+            for (let k = 1; k <= coverage; k++) {
+		const binom_coeff = Math.exp(logCombinations(coverage, k));
+		const beta_term1 = Math.exp(lnBetaFunc(k + alpha, coverage - k + beta));
+		const beta_term = beta_term1 / beta_term2;
+		prob += binom_coeff * beta_term;
+                min_reads.push(k);
+                probabilities.push(1 - prob);
+	    }
+            return { min_reads, probabilities };
+	}
+
+        // Initial values
+        let vaf = 0.1;
+        let coverage = 100;
+
+        // Update the plot based on sliders
+        function updatePlot() {
+            const data = generateData(vaf, coverage);
+
+            Plotly.react('plot', [{
+                x: data.min_reads,
+                y: data.probabilities,
+                type: 'scattergl',
+                mode: 'lines',
+                name: 'Probability Curve'
+            }], {
+                title: `VAF: ${vaf}, Coverage: ${coverage}`,
+                xaxis: { title: 'Min Reads' },
+                yaxis: { title: 'Probability' }
+            });
+        }
+
+        // Initialize plot
+        updatePlot();
+
+	// Event listeners for sliders
+	document.getElementById('vafSlider').addEventListener('input', function () {
+	    vaf = parseFloat(this.value);
+	    document.getElementById('vafValue').value = vaf.toFixed(2); // Keep in sync with slider
+	    updatePlot();
+	});
+
+	document.getElementById('vafValue').addEventListener('input', function () {
+	    let inputValue = parseFloat(this.value);
+	    if (inputValue <= 0 || inputValue >= 1) { // Ensure valid range for VAF
+		inputValue = 0.5;
+	    }
+	    document.getElementById('vafSlider').value = inputValue;
+	    vaf = inputValue
+	    updatePlot();
+	});
+
+	document.getElementById('coverageSlider').addEventListener('input', function () {
+	    coverage = parseInt(this.value);
+	    document.getElementById('coverageValue').value = coverage;
+	    updatePlot();
+	});
+
+	document.getElementById('coverageValue').addEventListener('input', function () {
+	    let inputValue = parseFloat(this.value);
+	    if (inputValue < 1 || inputValue > 1000) { // Ensure valid range for covearage
+		inputValue = 500;
+	    }
+	    coverage = inputValue;
+	    document.getElementById('coverageSlider').value = inputValue;
+	    updatePlot();
+	});
+
+    </script>
+</body>
+</html>
