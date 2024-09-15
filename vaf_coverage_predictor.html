@@ -78,7 +78,10 @@
 	variant allele frequency (VAF) and the depth of coverage</p>
 	<p> After setting your target VAF and coverage, mouse-over the plot and the y-axis number holds the probability
 	any given allele will have at least that much x-axis coverage.<br/> 
-	For example, at VAF=0.1 and Coverage=100, there is a 76.3% chance an allele will be supported by ≥7 reads</p>
+	For example, at VAF=0.1 and Coverage=100, there is a 76.3% chance an allele will be supported by ≥7 reads.</br>
+	Alternatively, the probability reflects the percent of alleles one can expect to be supported with ≥Min Reads.</p>
+	<br/>
+	<p> <a href="https://github.com/BCM-HGSC/SMaHT_VAF_Cov">Source code</a></p>
     </div>
     <script>
 	// Source: https://github.com/royhzq/betajs
@@ -129,8 +132,9 @@
 	    const alpha = coverage * vaf + 1;
 	    const beta = coverage * (1-vaf) + 1;
 	    const beta_term2 = lnBetaFunc(alpha, beta);
-
-            for (let k = 0; k <= coverage; k++) {
+	    min_reads.push(0);
+	    probabilities.push(1);
+	    for (let k = 1; k <= coverage; k++) {
 		const binom_coeff = logCombinations(coverage, k);
 		const beta_term1 = lnBetaFunc(k + alpha, coverage - k + beta);
 		const beta_term = beta_term1 - beta_term2;
@@ -138,7 +142,11 @@
 		prob = logSumExp(prob, term);
 
                 min_reads.push(k);
-                probabilities.push(1 - Math.exp(prob));
+		let val = 1 - Math.exp(prob);
+		if (val < 0.0) {
+		    val = 0.0;
+		}
+                probabilities.push(val.toFixed(5));
 	    }
             return { min_reads, probabilities };
 	}
@@ -156,11 +164,12 @@
                 y: data.probabilities,
                 type: 'scattergl',
                 mode: 'lines',
-                name: 'Probability Curve'
+                name: 'Probability Curve',
+		hovertemplate: 'Min Reads: ≥%{x}<br>Probability: %{y:.2%}<extra></extra>' // Keep original hover values
             }], {
                 title: `VAF: ${vaf}, Coverage: ${coverage}`,
                 xaxis: { title: 'Min Reads' },
-                yaxis: { title: 'Probability' }
+                yaxis: { title: 'Probability' , tickformat: '.0%'}
             });
         }
 
