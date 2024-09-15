@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive VAF and Coverage Plot</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/decimal.js/10.3.1/decimal.min.js"></script>
     <style>
         /* Center the content on the page */
         body {
@@ -85,6 +86,7 @@
     </div>
     <script>
 	// Source: https://github.com/royhzq/betajs
+	Decimal.config({ precision: 17 });
 	function lnBetaFunc(a, b) {
 	    // Log Beta Function: ln(Beta(a, b))
 	    let foo = 0.0;
@@ -100,7 +102,7 @@
 	    }
 	    return foo;
 	}
-	
+
 	function logCombinations(n, k) {
 	    // Handle edge cases where binomial coefficient is 1
 	    if (k === 0 || k === n) return 0;
@@ -128,21 +130,21 @@
 	function generateData(vaf, coverage) {
 	    const min_reads = [];
 	    const probabilities = [];
-	    let prob = -Infinity;
+	    let prob = 0;
 	    const alpha = coverage * vaf + 1;
 	    const beta = coverage * (1-vaf) + 1;
 	    const beta_term2 = lnBetaFunc(alpha, beta);
 	    min_reads.push(0);
 	    probabilities.push(1);
-	    for (let k = 1; k <= coverage; k++) {
+	    for (let k = 0; k <= coverage; k++) {
 		const binom_coeff = logCombinations(coverage, k);
 		const beta_term1 = lnBetaFunc(k + alpha, coverage - k + beta);
 		const beta_term = beta_term1 - beta_term2;
 		const term = binom_coeff + beta_term;
-		prob = logSumExp(prob, term);
+		prob += Math.exp(term);
 
-                min_reads.push(k);
-		let val = 1 - Math.exp(prob);
+                min_reads.push(k + 1);
+		let val = 1 - prob;
 		if (val < 0.0) {
 		    val = 0.0;
 		}
