@@ -142,10 +142,13 @@
 		const beta_term = beta_term1 - beta_term2;
 		const term = binom_coeff + beta_term;
 		prob += Math.exp(term);
-
-                min_reads.push(k + 1);
+		if (k == 0) {
+		    // we already handled zero
+		    continue;
+		}
+                min_reads.push(k);
 		let val = 1 - prob;
-		if (val < 0.0) {
+		if (val <= 0.0) {
 		    val = 0.0;
 		}
                 probabilities.push(val.toFixed(5));
