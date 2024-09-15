@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive VAF and Coverage Plot</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/decimal.js/10.3.1/decimal.min.js"></script>
     <style>
         /* Center the content on the page */
         body {
@@ -86,7 +85,6 @@
     </div>
     <script>
 	// Source: https://github.com/royhzq/betajs
-	Decimal.config({ precision: 17 });
 	function lnBetaFunc(a, b) {
 	    // Log Beta Function: ln(Beta(a, b))
 	    let foo = 0.0;
@@ -118,13 +116,6 @@
 	    }
 
 	    return logResult;
-	}
-
-	function logSumExp(logA, logB) {
-	    if (logA === -Infinity) return logB;
-	    if (logB === -Infinity) return logA;
-	    const maxLog = Math.max(logA, logB);
-	    return maxLog + Math.log(Math.exp(logA - maxLog) + Math.exp(logB - maxLog));
 	}
 
 	function generateData(vaf, coverage) {
@@ -159,11 +150,30 @@
         // Initial values
         let vaf = 0.1;
         let coverage = 100;
+	let layout = {
+	    title: `VAF: ${vaf}, Coverage: ${coverage}`,
+	    xaxis: {
+		title: 'Min Reads',
+		    showspikes: true,    // Enable spike lines for x-axis
+		    spikethickness: 2,   // Spike line thickness
+		    spikecolor: 'blue'    // Spike line color
+	    },
+	    yaxis: {
+		title: 'Probability',
+		tickformat: '.0%',
+		showspikes: true,    // Enable spike lines for x-axis
+		spikethickness: 2,   // Spike line thickness
+		spikecolor: 'blue'    // Spike line color
+	    },
+	    hovermode: 'closest',
+	    clickmode: 'event+select',
+	    annotations: [] // This will store the hover annotations
+	};
 
         // Update the plot based on sliders
         function updatePlot() {
             const data = generateData(vaf, coverage);
-
+	    layout.annotations = []; // Reset annotations
             Plotly.react('plot', [{
                 x: data.min_reads,
                 y: data.probabilities,
@@ -171,15 +181,38 @@
                 mode: 'lines',
                 name: 'Probability Curve',
 		hovertemplate: 'Min Reads: ≥%{x}<br>Probability: %{y:.2%}<extra></extra>' // Keep original hover values
-            }], {
-                title: `VAF: ${vaf}, Coverage: ${coverage}`,
-                xaxis: { title: 'Min Reads' },
-                yaxis: { title: 'Probability' , tickformat: '.0%'}
-            });
+            }], layout);
         }
 
         // Initialize plot
         updatePlot();
+	
+	// Capture the click event
+	document.getElementById('plot').on('plotly_click', function(eventData) {
+	    // Get the clicked point's coordinates and label
+	    var point = eventData.points[0];
+	    var yPercent = (point.y * 100).toFixed(1).toLocaleString(undefined, {minimumFractionDigits: 1}) + '%';
+
+	    console.log(point);
+	    var annotation = {
+	      x: point.x,
+	      y: point.y,
+	      xref: 'x',
+	      yref: 'y',
+	      text: `(≥${point.x}, ${yPercent})`,
+	      showarrow: true,
+	      arrowhead: 7,
+	      ax: 0,
+	      ay: -40
+	    };
+
+	    // Update layout with the new annotation
+	    var newLayout = {
+	      annotations: layout.annotations.concat([annotation]) // Add new annotation
+	    };
+
+	    Plotly.relayout('plot', newLayout); // Update the plot with the new annotation
+	});
 
 	// Event listeners for sliders
 	document.getElementById('vafSlider').addEventListener('input', function () {
