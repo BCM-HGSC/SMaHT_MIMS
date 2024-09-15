@@ -57,7 +57,7 @@
         <!-- VAF Slider -->
         <div class="slider-box">
             <label for="vafSlider">VAF: 
-		<input type="number" id="vafValue" value="0.1" step="0.005" min="0" max="1">
+		<input type="number" id="vafValue" value="0.1" step="0.005" min="0" max="0.995">
 	    </label>
             <input type="range" min="0.001" max="0.995" step="0.01" value="0.1" id="vafSlider">
         </div>
@@ -189,7 +189,6 @@
 	    let inputValue = parseFloat(this.value);
 	    if (inputValue <= 0.001) {
 		inputValue = 0.001;
-		document.getElementById('vafValue').value = inputValue.toFixed(3); // Keep in sync with slider
 	    }
 	    if (inputValue >= 0.995) {
 		inputValue = 0.995;
