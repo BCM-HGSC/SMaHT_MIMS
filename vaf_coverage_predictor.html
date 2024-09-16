@@ -72,6 +72,11 @@
 
     <!-- Plot container -->
     <div id="plot"></div>
+    <div class="sliders-wrapper">
+	<div class="slider-box">
+	    <button type="button" id="resetanno">Reset Anno</button>
+	</div>
+    </div>
     <br/>
     <div>
 	<p> This plot uses a beta-binomial distribution to plot the probability of sequencing an allele given its
@@ -173,7 +178,24 @@
         // Update the plot based on sliders
         function updatePlot() {
             const data = generateData(vaf, coverage);
-	    layout.annotations = []; // Reset annotations
+	    let new_anno = [];
+	    for (let point of layout.annotations) {
+		point.y = data.probabilities[point.x];
+		var yPercent = (point.y * 100).toFixed(1).toLocaleString(undefined, {minimumFractionDigits: 1}) + '%';
+		var annotation = {
+		  x: point.x,
+		  y: point.y,
+		  xref: 'x',
+		  yref: 'y',
+		  text: `(≥${point.x}, ${yPercent})`,
+		  showarrow: true,
+		  arrowhead: 7,
+		  ax: 0,
+		  ay: -40
+		};
+		new_anno.push(annotation)
+	    }
+	    layout.annotations = new_anno;
             Plotly.react('plot', [{
                 x: data.min_reads,
                 y: data.probabilities,
@@ -253,6 +275,10 @@
 	    updatePlot();
 	});
 
+	document.getElementById('resetanno').addEventListener('click', function () {
+	    layout.annotations = [];
+	    updatePlot();
+	});
     </script>
 </body>
 </html>
