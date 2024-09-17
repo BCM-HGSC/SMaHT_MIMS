@@ -80,7 +80,7 @@
         <!-- VAF Slider -->
         <div class="slider-box">
             <label for="vafSlider">VAF: 
-		<input type="number" id="vafValue" value="0.1" step="0.005" min="0" max="0.995">
+		<input type="number" id="vafValue" value="0.1" step="0.005" min="0.001" max="0.995">
 	    </label>
             <input type="range" min="0.001" max="0.995" step="0.01" value="0.1" id="vafSlider">
         </div>
@@ -88,7 +88,7 @@
         <!-- Coverage Slider -->
         <div class="slider-box">
             <label for="coverageSlider">Coverage: 
-		<input type="number" id="coverageValue", value="100" step="10", min="100" max="1000">
+		<input type="number" id="coverageValue", value="100" step="25", min="30" max="1000">
 	    </label>
             <input type="range" min="1" max="1000" step="1" value="100" id="coverageSlider">
         </div>
@@ -127,10 +127,10 @@
 	<tbody>
 	    <tr>
 		<td><input type="text" value="Low"></td>
-		<td><input type="number" value="0.0"></td>
-		<td><input type="number" value="0.3"></td>
-		<td><input type="number" value="2"></td>
-		<td><input type="number" value="100"></td>
+		<td><input type="number" value="0.0" step="0.005" min="0.001" max="0.995"></td>
+		<td><input type="number" value="0.3" step="0.005" min="0.001" max="0.995"></td>
+		<td><input type="number" value="2" step="1", min="1", max="100"></td>
+		<td><input type="number" value="100", step="10", min="30", max="1000"></td>
 		<td><span class="remove-row">X</span></td>
 	    </tr>
 	</tbody>
@@ -401,10 +401,10 @@
 
 	    newRow.innerHTML = `
 		<td><input type="text" placeholder="Label"></td>
-		<td><input type="number" placeholder="Min"></td>
-		<td><input type="number" placeholder="Max"></td>
-		<td><input type="number" placeholder="Reads"></td>
-		<td><input type="number" placeholder="Coverage"></td>
+		<td><input type="number" value="0.0" step="0.005" min="0.001" max="0.995"></td>
+		<td><input type="number" value="0.3" step="0.005" min="0.001" max="0.995"></td>
+		<td><input type="number" value="2" step="1", min="1", max="100"></td>
+		<td><input type="number" value="100", step="10", min="30", max="1000"></td>
 		<td><span class="remove-row">X</span></td>
 	    `;
 
