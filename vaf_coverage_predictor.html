@@ -46,6 +46,30 @@
             margin-top: 20px;
             width: 80%; /* Ensure the plot is centered and responsive */
         }
+
+	        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+        input {
+            width: 100%;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .add-row {
+            cursor: pointer;
+            color: blue;
+            font-size: 18px;
+        }
+	.remove-row {
+            cursor: pointer;
+            color: red;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
@@ -85,9 +109,47 @@
 	any given allele will have at least that much x-axis coverage.<br/> 
 	For example, at VAF=0.1 and Coverage=100, there is a 76.3% chance an allele will be supported by ≥7 reads.</br>
 	Alternatively, the probability reflects the percent of alleles one can expect to be supported with ≥Min Reads.</p>
-	<br/>
-	<p> <a href="https://github.com/BCM-HGSC/SMaHT_VAF_Cov">Source code</a></p>
     </div>
+    
+    <h2>VAF Bins</h2>
+
+    <table id="spreadsheet">
+	<thead>
+	    <tr>
+		<th>Label</th>
+		<th>VAF Min</th>
+		<th>VAF Max</th>
+		<th>Min Reads</th>
+		<th>Coverage</th>
+		<th>Remove</th>
+	    </tr>
+	</thead>
+	<tbody>
+	    <tr>
+		<td><input type="text" value="Low"></td>
+		<td><input type="number" value="0.0"></td>
+		<td><input type="number" value="0.3"></td>
+		<td><input type="number" value="2"></td>
+		<td><input type="number" value="100"></td>
+		<td><span class="remove-row">X</span></td>
+	    </tr>
+	</tbody>
+    </table>
+    
+    <button id="plot-btn">Plot Data</button>
+    <p class="add-row">+ Add Row</p>
+    <div id="barplot"></div>
+
+    <div>
+	<p> For a range of VAFs, we can average the probabilities to estimate the percent of alleles which should be
+	found given a coverage and minimum number of reads. Bins are [Min, Max). These probabilities are a weighted
+	averaged based on the SMaHT MIMS benchmark SVs. However, real mosaic variation occurs at a different rate.
+	For example, more SMaHT MIMS alleles have VAF below 0.3 than above. If you are interested in unweighted average
+	(i.e. assuming all VAFs occur at the same frequency), put an issue on the repo and I can make that happen.
+	<br/>
+	<p> <a href="https://github.com/BCM-HGSC/SMaHT_VAF_Cov">Github Repo</a></p>
+    </div>
+
     <script>
 	// Source: https://github.com/royhzq/betajs
 	function lnBetaFunc(a, b) {
@@ -132,7 +194,7 @@
 	    const beta_term2 = lnBetaFunc(alpha, beta);
 	    min_reads.push(0);
 	    probabilities.push(1);
-	    for (let k = 0; k <= coverage; k++) {
+	    for (let k = 0; k < coverage; k++) {
 		const binom_coeff = logCombinations(coverage, k);
 		const beta_term1 = lnBetaFunc(k + alpha, coverage - k + beta);
 		const beta_term = beta_term1 - beta_term2;
@@ -217,7 +279,6 @@
 	    var point = eventData.points[0];
 	    var yPercent = (point.y * 100).toFixed(1).toLocaleString(undefined, {minimumFractionDigits: 1}) + '%';
 
-	    console.log(point);
 	    var annotation = {
 	      x: point.x,
 	      y: point.y,
@@ -280,6 +341,129 @@
 	document.getElementById('resetanno').addEventListener('click', function () {
 	    layout.annotations = [];
 	    updatePlot();
+	});
+
+
+	// VAF Bins
+	// SV VAF Bins, 0: vaf, 1: proportion
+	const vaf_props = [[0.002515, 0.09496850031452742], [0.007565, 0.36352796477293], [0.0126, 0.0179984790017745], [0.0176, 0.03740528969382869], [0.022600000000000002, 0.006985325183787285], [0.02765, 0.006900825282370504], [0.0327, 0.0024692748969570646], [0.0377, 0.0011829986198349436], [0.0427, 0.0007980546244918269], [0.04775, 0.13992244786825528], [0.0528, 0.004271939460515074], [0.057800000000000004, 0.031208630256598036], [0.0628, 0.004300106094320667], [0.06785, 0.010891098404829639], [0.07289999999999999, 0.0031922184979673077], [0.0779, 0.003699217906467998], [0.0829, 0.0020092198781323646], [0.08795, 0.0014740538358260803], [0.093, 0.00101399881700138], [0.09825, 0.005614549005248382], [0.10350000000000001, 0.000779276868621431], [0.1085, 0.003117107474485724], [0.1135, 0.001032776572871776], [0.1185, 0.0021594419250955317], [0.1235, 0.0008731656479734107], [0.1285, 0.0012674985212517253], [0.1335, 0.000779276868621431], [0.1385, 0.0007417213568806392], [0.1435, 0.0006478325775286595], [0.1485, 0.0003004440939263349], [0.1535, 0.00041311062914871046], [0.1585, 0.0001314442910927715], [0.1635, 0.00022533307044475114], [0.1685, 0.0], [0.1735, 0.0], [0.1785, 0.0], [0.1835, 0.0], [0.1885, 0.0], [0.1935, 0.0], [0.1985, 0.0], [0.20350000000000001, 0.0], [0.2085, 0.0], [0.2135, 0.0], [0.2185, 0.0], [0.2235, 0.0], [0.2285, 0.0], [0.23349999999999999, 0.0], [0.2385, 0.0], [0.2435, 0.0], [0.2485, 0.0], [0.2535, 0.0], [0.2585, 0.0], [0.2635, 0.0], [0.2685, 0.0], [0.2735, 0.0], [0.2785, 0.0], [0.2835, 0.0], [0.2885, 0.0], [0.2935, 0.0], [0.299, 0.0], [0.3045, 0.0], [0.3095, 0.0], [0.3145, 0.0], [0.3195, 0.0], [0.3245, 0.0], [0.3295, 0.0], [0.3345, 0.0], [0.3395, 0.0], [0.34450000000000003, 0.0], [0.3495, 0.0], [0.3545, 0.0], [0.3595, 0.0], [0.3645, 0.0], [0.3695, 0.0], [0.3745, 0.0], [0.3795, 0.0], [0.3845, 0.0], [0.3895, 0.0], [0.3945, 0.0], [0.3995, 0.0], [0.40449999999999997, 0.0], [0.4095, 0.0], [0.4145, 0.0], [0.4195, 0.1046953778553925], [0.4245, 0.0029387187937169627], [0.4295, 0.022711695725243876], [0.4345, 0.00262888582185543], [0.4395, 0.010027321634791427], [0.4445, 0.0017087757842060296], [0.4495, 0.004065384145940719], [0.4545, 0.0011454431080941516], [0.4595, 0.0015116093475668723], [0.4645, 0.0005821104319822738], [0.46950000000000003, 0.005914993099174717], [0.4745, 0.000525777164371086], [0.4795, 0.006196659437230656], [0.4845, 0.0009858321831957863], [0.4895, 0.004985494183590119], [0.4945, 0.001042165450806974], [0.5, 0.004253161704644678], [0.5055000000000001, 0.0008919434038438067], [0.5105, 0.0018120534414932071], [0.5155000000000001, 0.0007604991127510352], [0.5205, 0.0014083316902796946], [0.5255000000000001, 0.000779276868621431], [0.5305, 0.0011360542301589538], [0.5355000000000001, 0.0007417213568806392], [0.5405, 0.00106094320667737], [0.5455000000000001, 0.0005821104319822738], [0.5505, 0.0015961092489836539], [0.5555000000000001, 0.0004976105305654921], [0.5605, 0.0015116093475668723], [0.5654999999999999, 0.00031922184979673077], [0.5705, 0.001295665155057319], [0.5754999999999999, 7.511102348158372e-05], [0.5805, 0.0008074435024270249], [0.5854999999999999, 0.0], [0.5905, 0.0], [0.5954999999999999, 0.0], [0.6005, 0.0], [0.6054999999999999, 0.0], [0.6105, 0.0], [0.6154999999999999, 0.0], [0.6205, 0.0], [0.6255, 0.0], [0.6305000000000001, 0.0], [0.6355, 0.0], [0.6405000000000001, 0.0], [0.6455, 0.0], [0.6505000000000001, 0.0], [0.6555, 0.0], [0.6605000000000001, 0.0], [0.6655, 0.0], [0.6705000000000001, 0.0], [0.6755, 0.0], [0.6805000000000001, 0.0], [0.6855, 0.0], [0.6904999999999999, 0.0], [0.6955, 0.0], [0.701, 0.0], [0.7064999999999999, 0.0], [0.7115, 0.0], [0.7164999999999999, 0.0], [0.7215, 0.0], [0.7264999999999999, 0.0], [0.7315, 0.0], [0.7364999999999999, 0.0], [0.7415, 0.0], [0.7464999999999999, 0.0], [0.7515000000000001, 0.0], [0.7565, 0.0], [0.7615000000000001, 0.0], [0.7665, 0.0], [0.7715000000000001, 0.0], [0.7765, 0.0], [0.7815000000000001, 0.0], [0.7865, 0.0], [0.7915000000000001, 0.0], [0.7965, 0.0], [0.8015000000000001, 0.0], [0.8065, 0.0], [0.8115, 0.0], [0.8165, 0.0], [0.8214999999999999, 0.0], [0.8265, 0.0], [0.8314999999999999, 0.0], [0.8365, 0.0077552131744735185], [0.8414999999999999, 0.0012487207653813293], [0.8465, 0.004487883653024627], [0.8514999999999999, 0.0013426095447333088], [0.8565, 0.002826052258494587], [0.8614999999999999, 0.001539775981372466], [0.8665, 0.0016148870048540499], [0.8714999999999999, 0.0011642208639645476], [0.8765000000000001, 0.000769887990686233], [0.8815, 0.0009294989155845984], [0.8865000000000001, 0.0013613873006037048], [0.8915, 0.0007511102348158372], [0.8965000000000001, 0.0017838868076876133], [0.902, 0.0008919434038438067], [0.9075, 0.001558553737242862], [0.9125000000000001, 0.001314442910927715], [0.9175, 0.001586720371048456], [0.9225000000000001, 0.0016242758827892478], [0.9275, 0.001070332084612568], [0.9325000000000001, 0.0015022204696316743], [0.9375, 0.0006759992113342534], [0.9424999999999999, 0.0014646649578908824], [0.9475, 0.0006666103333990555], [0.9524999999999999, 0.0011548319860293496], [0.9575, 0.0004976105305654921], [0.9624999999999999, 0.0004506661408895023], [0.9675, 0.000779276868621431], [0.9724999999999999, 0.001042165450806974], [0.9775, 0.00106094320667737], [0.9824999999999999, 0.0016993869062708316], [0.9875, 0.0008637767700382127], [0.9924999999999999, 0.0027978856246889936], [0.9975, 0.006224826071036251]]
+    
+
+	function vafOverRange(vafMin, vafMax, coverage, minReads) {
+	    // Array to store beta-binomial probabilities
+	    const probabilities = [];
+	    const weights = [];
+	    // Iterate over the VAF values and their counts
+	    vaf_props.forEach(([vaf, cnt]) => {
+		if (vafMin <= vaf && vaf < vafMax) {
+		    // Calculate the beta-binomial probability for the given VAF
+		    const data = generateData(vaf, coverage);
+		    const prob = data['probabilities'];
+		    probabilities.push(prob[minReads]);
+		    weights.push(cnt);
+		}
+	    });
+
+	    // Compute the weighted average of probabilities
+	    const weightedProb = weightedAverage(probabilities, weights);
+	    return weightedProb;
+	}
+
+	// Helper function for weighted average
+	function weightedAverage(values, weights) {
+	    // Ensure the arrays have the same length
+	    if (values.length !== weights.length || values.length === 0) {
+		throw new Error("Values and weights arrays must have the same non-zero length.");
+	    }
+
+	    // Compute the sum of all weights, treating NaN as 0
+	    const totalWeight = weights.reduce((a, b) => a + (isNaN(b) ? 0 : b), 0);
+	    if (totalWeight === 0) {
+		return 0; // Return 0 if the total weight is zero
+	    }
+	    // Compute the weighted sum of values, treating NaN as 0
+	    const weightedSum = values.reduce((sum, value, index) =>
+		sum + (isNaN(value) ? 0 : value) * (isNaN(weights[index]) ? 0 : weights[index]),
+	    0);
+	    // Return the weighted average
+	    return weightedSum / totalWeight;
+	}
+
+	function vaf_range(min, max) {
+	    // Example: return the average of min and max
+	    return (min + max) / 2;
+	}
+
+	// Add new rows
+	document.querySelector('.add-row').addEventListener('click', function() {
+	    const table = document.querySelector('#spreadsheet tbody');
+	    const newRow = document.createElement('tr');
+
+	    newRow.innerHTML = `
+		<td><input type="text" placeholder="Label"></td>
+		<td><input type="number" placeholder="Min"></td>
+		<td><input type="number" placeholder="Max"></td>
+		<td><input type="number" placeholder="Reads"></td>
+		<td><input type="number" placeholder="Coverage"></td>
+		<td><span class="remove-row">X</span></td>
+	    `;
+
+	    table.appendChild(newRow);
+
+	    // Add remove functionality for the new row
+	    newRow.querySelector('.remove-row').addEventListener('click', function() {
+		newRow.remove();
+	    });
+	});
+
+	// Add remove functionality to the initial row
+	document.querySelectorAll('.remove-row').forEach(function(removeBtn) {
+	    removeBtn.addEventListener('click', function() {
+		removeBtn.closest('tr').remove();
+	    });
+	});
+
+	// Plot Data
+	document.getElementById('plot-btn').addEventListener('click', function() {
+	    const rows = document.querySelectorAll('#spreadsheet tbody tr');
+	    let xValues = [];
+	    let yValues = [];
+
+	    rows.forEach(function(row) {
+		const label = row.querySelector('input[type="text"]').value.trim();
+		const minInput = row.querySelector('td:nth-child(2) input');
+		const maxInput = row.querySelector('td:nth-child(3) input');
+		const reads = row.querySelector('td:nth-child(4) input');
+		const coverage = row.querySelector('td:nth-child(5) input');
+
+		// Safely retrieve and parse the input values
+		const m_min = minInput && minInput.value !== '' ? parseFloat(minInput.value) : NaN;
+		const m_max = maxInput && maxInput.value !== '' ? parseFloat(maxInput.value) : NaN;
+		const m_reads = reads && reads.value !== '' ? parseInt(reads.value) : NaN;
+		const m_coverage = coverage && coverage.value !== '' ? parseInt(coverage.value) : NaN;
+		// Only proceed if the label is non-empty and both min and max are valid numbers
+		if (label && !isNaN(m_min) && !isNaN(m_max)) {
+		    xValues.push(label);
+		    yValues.push(vafOverRange(m_min, m_max, m_coverage, m_reads));
+		} else {
+		    console.warn("Skipping row with invalid inputs:", { label, minInput, m_min, maxInput, m_max });
+		}
+	    }); 
+
+	    // Create the bar plot using Plotly
+	    const data = [{
+		x: xValues,
+		y: yValues,
+		type: 'bar'
+	    }];
+
+	    const layout = {
+		title: 'VAF Bins',
+		xaxis: { title: '' },
+		yaxis: { title: 'Probability' }
+	    };
+
+	    Plotly.newPlot('barplot', data, layout);
 	});
     </script>
 </body>
