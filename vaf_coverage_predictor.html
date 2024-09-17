@@ -481,13 +481,16 @@
 	    const data = [{
 		x: xValues,
 		y: yValues,
-		type: 'bar'
+		type: 'bar',
+		hovertemplate: '%{y:.2%}<extra></extra>'
 	    }];
 
 	    const layout = {
 		title: 'VAF Bins',
 		xaxis: { title: '' },
-		yaxis: { title: 'Probability' },
+		yaxis: { title: 'Probability',
+		    tickformat: '.0%',
+		},
 	    };
 
 	    Plotly.newPlot('barplot', data, layout);
