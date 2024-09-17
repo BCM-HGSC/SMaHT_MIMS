@@ -195,6 +195,8 @@
 		};
 		new_anno.push(annotation)
 	    }
+
+	    layout.title = `VAF: ${vaf}, Coverage: ${coverage}`,
 	    layout.annotations = new_anno;
             Plotly.react('plot', [{
                 x: data.min_reads,
@@ -252,7 +254,7 @@
 		inputValue = 0.995;
 	    }
 	    document.getElementById('vafSlider').value = inputValue;
-	    vaf = inputValue
+	    vaf = inputValue;
 	    updatePlot();
 	});
 
