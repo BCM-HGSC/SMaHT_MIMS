@@ -136,8 +136,8 @@
 	</tbody>
     </table>
     
-    <button id="plot-btn">Plot Data</button>
     <p class="add-row">+ Add Row</p>
+    <button id="plot-btn">Plot Data</button>
     <div id="barplot"></div>
 
     <div>
@@ -460,7 +460,7 @@
 	    const layout = {
 		title: 'VAF Bins',
 		xaxis: { title: '' },
-		yaxis: { title: 'Probability' }
+		yaxis: { title: 'Probability' },
 	    };
 
 	    Plotly.newPlot('barplot', data, layout);
