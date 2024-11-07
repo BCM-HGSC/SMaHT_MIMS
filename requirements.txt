@@ -1,0 +1,8 @@
+joblib>=1.4.2
+pandas>=2.2.2
+seaborn>=0.13.2
+numpy>=1.26.4
+matplotlib>=3.7.1
+truvari>=4.3.1
+scipy>=1.10.1
+
