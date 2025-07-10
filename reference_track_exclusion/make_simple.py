@@ -6,18 +6,16 @@ import numpy as np
 
 
 vcf_fn, bed_fn = sys.argv[1:]
-vcf = pysam.VariantFile(vcf_fn)
-out_vcf = pysam.VariantFile("/dev/stdout", 'w', header=vcf.header)
-
+#out_vcf = pysam.VariantFile("/dev/stdout", 'w', header=vcf.header)
+params = truvari.VariantParams(sizemin=0, 
+                               sizefilt=0,
+                               sizemax=100_100)
+vcf = truvari.VariantFile(vcf_fn, params=params)
 region_tree = truvari.build_region_tree(vcf, includebed=bed_fn)
 
-vcf_i = truvari.region_filter(vcf, region_tree)
+vcf_i = vcf.fetch_regions(region_tree)
 
-matcher = truvari.Matcher()
-matcher.params.sizemin = 0
-matcher.params.sizefilt = 0
-matcher.params.sizemax = 100_000
-chunks = truvari.chunker(matcher, ('base', vcf_i))
+chunks = truvari.chunker(params, ('base', vcf_i))
 
 for chunk, _ in chunks:
     all_gts = []
