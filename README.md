@@ -1,7 +1,9 @@
 
 Workspace for SMaHT MIMS benchmark creation and analysis tools
 
-<a href="https://raw.githack.com/BCM-HGSC/SMaHT_MIMS/main/coverage_calculatorvaf_coverage_predictor.html">See Here</a>
+See `benchmark_v2` for the actual benchmark. 
+
+<a href="https://raw.githack.com/BCM-HGSC/SMaHT_MIMS/main/coverage_calculatorvaf_coverage_predictor.html">Coverage Calculator</a>
 
 
 
@@ -16,7 +18,7 @@ Terminology
 | Somatic (clonal)         |  ~30–50%           | Tumor or clonal somatic in bulk tissue            |
 | Somatic (subclonal)      |  ~5–30%            | Present in a subset of cells                      |
 | Mosaic (constitutional)  |  ~1–30%            | Depends on developmental timing                   |
-| Ultra-low VAF somatic    | <1%                | Needs deep/targeted sequencing + error correction |
+| Ultra-low VAF somatic    | <5%                | Needs deep/targeted sequencing                    |
 
 | Term           | When Mutation Occurs        | How Many Cells Affected       | VAF in Bulk WGS                    |
 | -------------- | --------------------------- | ----------------------------- | ---------------------------------- |
