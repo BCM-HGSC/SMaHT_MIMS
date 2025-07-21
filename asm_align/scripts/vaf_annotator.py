@@ -24,9 +24,12 @@ def make_vaf(entry):
     return occur_pct
 
 if __name__ == '__main__':
-    in_fn = sys.argv[1]
+    if len(sys.argv) < 2:
+        in_fn = '/dev/stdin'
+    else:
+        in_fn = sys.argv[1]
 
-    vcf = pysam.VariantFile(sys.argv[1])
+    vcf = pysam.VariantFile(in_fn)
     # Edit Header
     header = vcf.header.copy()
     header.add_line('##INFO=<ID=VAF,Number=R,Type=Float,'

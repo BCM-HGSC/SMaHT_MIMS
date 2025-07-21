@@ -21,6 +21,9 @@ for chunk, _ in chunks:
     all_gts = []
     pos = []
     for entry in chunk['base']:
+        # Only SVs
+        if entry.var_size() < 50:
+            continue
         all_gts.append(list(itertools.chain(*[_['GT'] for _ in entry.samples.values()])))
         pos.append(entry.start)
         pos.append(entry.stop)
