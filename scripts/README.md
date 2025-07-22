@@ -38,17 +38,18 @@ As an example, consider the below, truncated surbscore report
 | svtype    | DEL             | 0.9806 | 0.6264 | 18.8122   | -21.1796 | -0.0359 | 21.0722 | 13595 | 1.0      | False  |
 | VAF_bin   | GermlineHom     | 1.0    | 0.9446 | 72.259    | -24.9471 | -0.0244 | 24.533  | 5308  | 1.0      | False  |
 
-This report tells us that from top-to-bottom (lowest to highest p-value), we have ranked features that are most
-dependent on the accuracy of the caller. For example, the top hit of `VAF_bin SomaticLow(<5%)` indicates that the
-average accuracy of variants with this feature is 0.140, which is significantly lower than the average performance of
+This report tells us that from top-to-bottom (lowest to highest p-value), we have ranked features on which the caller's
+accurac is most dependent. For example, the top hit of `VAF_bin SomaticLow(<5%)` indicates that the
+average accuracy of variants with this feature is `0.140`, which is significantly lower than the average performance of
 the caller across other feature/value stratifications. Furthermore, because the multiple-test correction adjusted
-p-value (`adj_pval`) is still below our alpha (0.01), we can reject the null hypothesis that the caller's performance is
+p-value (`adj_pval`) is still below our alpha (`0.01`), we can reject the null hypothesis that the caller's performance is
 independent of this stratification.
 
 While few stratifications will reach the level of significance, we can still use the sorted p-values to roughly assess a
-callers performance on insignificant stratifications. For example, the third lowest p-value (`svtype INS, p=0.1213`) has
+callers performance on all stratifications. For example, the third lowest p-value (`svtype INS, p=0.1213`) has
 an `acc=0.4985`, which is lower than other stratifications with higher p-values (e.g. `svtype DEL, p=0.9806, acc=0.62`).
-This ordering tells is that this example caller performs better on DEL than INS.
+This ordering tells is that this example caller performs better on DEL than INS, and performs really well on GermlineHom
+SVs.
 
 Advanced options are available in `surbscore.py --help`.
 
