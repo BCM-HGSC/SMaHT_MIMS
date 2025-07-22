@@ -9,16 +9,16 @@ The `--output` report has columns:
 
 | Column   | Definition                                                         |
 | -------- | ------------------------------------------------------------------ |
-| feature  | Stratification feature (e.g. svtype)                               |
-| value    | Stratification value (e.g. DEL|INS)                                |
+| feature  | Stratification feature (e.g. `svtype`)                             |
+| value    | Stratification value (e.g. `DEL`)                                  |
 | pval     | Raw permutation test p-value                                       |
-| acc      | Accuracy of calls in this stratification (e.g. TP / (TP+FN))       |
+| acc      | Accuracy of calls in this stratification (e.g. `TP / (TP+FN)`)     |
 | delta    | Observed mean ranking minus permutation tests' mean ranking        |
 | q1       | 1% Quantile of permutation tests                                   |
 | q50      | 50% Quantile of permutation tests                                  |
 | q99      | 99% Quantile of permutation tests                                  |
 | obs      | Number of variants observed in this stratification                 |
-| adj_pval | XY Adjusted pvalue                                                 |
+| adj_pval | Benjamini/Hochberg multiple test correction adjusted pvalue        |
 | reject   | True or False based on rejection of null hypothesis at given alpha |
 
 For the SMaHT MIMS SV benchmark, run on the truvari bench result with the command 
