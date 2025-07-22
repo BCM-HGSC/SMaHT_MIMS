@@ -105,7 +105,7 @@ def surb_score(m_data, state="state", features=["svtype", "szbin"],  min_obs=10,
             case = np.array(rank[sub].index)
             control = np.array(rank[~sub].index)
             if len(case) < min_obs or len(control) < min_obs:
-                logging.debug("Skipping %s : %s with %d case and %d control observations", feat, val, len(
+                logging.warning("%s : %s with < %d observations ignored (%d case, %d control)", feat, val, min_obs, len(
                     case), len(control))
                 continue
             logging.debug("Testing %s : %s", feat, val)
@@ -196,6 +196,8 @@ if __name__ == '__main__':
     data = joblib.load(data_file)
     if args.preset == "mims":
         set_mims_bins(data)
+    else:
+        data['is_tp'] = data['state'].str.startswith('tp')
 
     if args.states == 'base':
         data = data[data['state'].isin(['tpbase', 'fn'])]
