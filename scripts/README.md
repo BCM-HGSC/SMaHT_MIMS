@@ -4,10 +4,11 @@ surbscore.py
 ------------
 
 This tool automates the work of investigating a callers performance against different variant feature stratifications.
+Note this tool requires `python3 -m pip install truvari>=5.3 scipy==1.10.1  statsmodels==0.13.5`
 The `--output` report has columns:
 
 | Column   | Definition                                                         |
-| ======== | ================================================================== |
+| -------- | ------------------------------------------------------------------ |
 | feature  | Stratification feature (e.g. svtype)                               |
 | value    | Stratification value (e.g. DEL|INS)                                |
 | pval     | Raw permutation test p-value                                       |
@@ -29,7 +30,7 @@ python surbscore.py --preset mims bench_result_dir/
 As an example, consider the below, truncated surbscore report
 
 | feature	| value           | pval   | acc    | delta     | q1       | q50     | q99     | obs   | adj_pval | reject |
-| ========= | =============== | ====== | ====== | ========= | ======== | ======= | ======= | ===== | ======== | ====== |
+| --------- | --------------- | ------ | ------ | --------- | -------- | ------- | ------- | ----- | -------- | ------ |
 | VAF_bin   | SomaticLow(<5%) | 0.0    | 0.140  | -111.7586 | -22.653  | -0.0418 | 22.6734 | 13184 | 0.0      | True   |
 | isolated  | False           | 0.0    | 0.391  | -49.437   | -20.6976 | 0.0522  | 21.1852 | 12401 | 0.0      | True   |
 | svtype    | INS             | 0.0182 | 0.4985 | -18.8122  | -21.0539 | -0.0179 | 21.2513 | 20545 | 0.1213   | False  |
