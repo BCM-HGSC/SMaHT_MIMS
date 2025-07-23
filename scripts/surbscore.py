@@ -1,3 +1,6 @@
+"""
+Automatic scoring of stratifications
+"""
 import os
 import sys
 import logging
@@ -125,8 +128,34 @@ def surb_score(m_data, state="state", features=["svtype", "szbin"],  min_obs=10,
                      ], axis=1)
     return adj, all_counts
 
+def bin_equal_freq(series, n_bins) -> pd.Series:
+    """
+    Bin a continuous series into equal-frequency (quantile) bins.
+    
+    Parameters:
+    - series: The continuous variable as a pandas Series.
+    - n_bins: The number of bins to create.
+    
+    Returns:
+    - A Series with bin labels (0 to n_bins-1).
+    """
+    return pd.qcut(series, q=n_bins, duplicates='drop')
 
-known_features = {'mims': ['svtype', 'szbin', 'TRF', 'isolated', 'VAF_bin']}
+def bin_equal_width(series, n_bins) -> pd.Series:
+    """
+    Bin a continuous series into equal-width bins.
+    
+    Parameters:
+    - series: The continuous variable as a pandas Series.
+    - n_bins: The number of bins to create.
+    
+    Returns:
+    - A Series with bin labels (0 to n_bins-1).
+    """
+    return pd.cut(series, bins=n_bins, include_lowest=True)
+
+# PresetName: (FeatureList, StatesStr)
+known_features = {'mims': (['svtype', 'szbin', 'TRF', 'isolated', 'VAF_bin'], 'base')}
 
 
 def parse_args(args):
@@ -165,7 +194,7 @@ def parse_args(args):
         if not args.preset:
             logging.error("Either `--features` or `--preset` must be provided")
             sys.exit(1)
-        args.features = known_features[args.preset]
+        args.features, args.states = known_features[args.preset]
     else:
         args.features = args.features.split(',')
     return args
@@ -202,7 +231,19 @@ if __name__ == '__main__':
     if args.states == 'base':
         data = data[data['state'].isin(['tpbase', 'fn'])]
     elif args.states == "comp":
-        data = data[data['state'].isin(['tp', 'fn'])]
+        data = data[data['state'].isin(['tp', 'fp'])]
+
+    for i in range(len(args.features)):
+        col = args.features[i]
+        if ':' in col:
+            name, key = col.split(':')
+            method, cnt = key[0], key[1:]
+            cnt = int(cnt)
+            if method == 'f':
+                data[name] = bin_equal_freq(data[name], cnt)
+            elif method == 'f':
+                data[name] = bin_equal_width(data[name], cnt)
+            args.features[i] = name
 
     n_strats = 1
     n_values = 0
@@ -211,8 +252,11 @@ if __name__ == '__main__':
         n_strats *= c
         n_values += c
     n_feat = len(args.features)
+
     logging.info("Scoring %d features with %d values (max %d stratifications)",
                  n_feat, n_values, n_strats)
+
+
     scores, counts = surb_score(data, state="is_tp",
                                 features=args.features,
                                 min_obs=args.min_obs,
