@@ -53,6 +53,12 @@ SVs.
 
 Advanced options are available in `surbscore.py --help`.
 
+The `--preset` options contains pre-set `--feature` and `--states` values for known stratifications to score. 
+Custom features can be provided by specifying the column name in the `truvari vcf2df` DataFrame. Every feature MUST be
+categorical. For continuous variables, this script can automatically bin values by their width or frequency. For
+example, we can bin a sample's SVLEN into 3 equal width bins with `--feature svlen:w3` or 3 equal frequency bins with
+`--feature svlen:f3`. 
+
 dynamic_collapse.py
 -------------------
 
