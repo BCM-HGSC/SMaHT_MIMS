@@ -10,8 +10,7 @@ import truvari
 from truvari.vcf2df import vcf2df_main
 import numpy as np
 import pandas as pd
-# requires scipy==1.10.1 and statsmodels==0.13.5
-from scipy.stats import chi2_contingency
+# requires statsmodels==0.13.5
 from statsmodels.stats.multitest import multipletests
 
 
@@ -33,8 +32,7 @@ def get_scores(df, state="state", features=["svtype", "szbin"], min_obs=10):
     all_cont_obs = pd.crosstab(df[state], [df[i] for i in features])
     logging.info("%d stratifications had ≥1 observed variant",
                  all_cont_obs.shape[1])
-    view = pd.DataFrame(all_cont_obs.sum(axis=0))
-    filtered = view[0] < min_obs
+    filtered = all_cont_obs.sum(axis=0) < 10
     if filtered.any():
         logging.warning(
             "%d stratifications with < %d observations ignored", filtered.sum(), min_obs)
@@ -42,7 +40,12 @@ def get_scores(df, state="state", features=["svtype", "szbin"], min_obs=10):
             logging.debug("Fitered Bins\n%s", str(all_cont_obs.T[filtered]))
 
     cont_obs = all_cont_obs.T[~filtered].T
-    chi, pval, dof, exp = chi2_contingency(cont_obs)
+    # Calculate Expected
+    c_total = cont_obs.sum(axis=0)
+    r_total = cont_obs.sum(axis=1)
+    g_total = c_total.sum()
+    exp = np.outer(r_total, c_total) / g_total
+
     score = (np.sign(cont_obs.values[1] - exp[1])) * \
             (cont_obs.values[1] - exp[1])**2 / exp[1]
 

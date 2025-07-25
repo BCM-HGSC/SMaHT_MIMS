@@ -1,10 +1,10 @@
 Main Scripts with potential reuse across projects beyond SMaHT MIMS.
 
-surbscore.py
-------------
+stratp_test.py
+--------------
 
 This tool automates the work of investigating a callers performance against different variant feature stratifications.
-Note this tool requires `python3 -m pip install truvari>=5.3 scipy==1.10.1  statsmodels==0.13.5`
+Note this tool requires `python3 -m pip install truvari>=5.3 statsmodels==0.13.5`
 The `--output` report has columns:
 
 | Column   | Definition                                                         |
@@ -23,11 +23,11 @@ The `--output` report has columns:
 
 For the SMaHT MIMS SV benchmark, run on the truvari bench result with the command 
 ```python
-python surbscore.py --preset mims bench_result_dir/
+python stratp_test.py --preset mims bench_result_dir/
 ```
 
-### How to interpret surbscore output
-As an example, consider the below, truncated surbscore report
+### How to interpret stratp_test output
+As an example, consider the below, truncated StratP test report
 
 | feature	| value           | acc    | delta     | q1       | q50     | q99     | obs   | pval   | adj_pval | reject |
 | --------- | --------------- | ------ | --------- | -------- | ------- | ------- | ----- | ------ | -------- | ------ |
@@ -51,7 +51,7 @@ an `acc=0.4985`, which is lower than other stratifications with higher p-values 
 This ordering tells is that this example caller performs better on DEL than INS, and performs really well on GermlineHom
 SVs.
 
-Advanced options are available in `surbscore.py --help`.
+Advanced options are available in `stratp_test.py --help`.
 
 The `--preset` options contains pre-set `--feature` and `--states` values for known stratifications to score. 
 Custom features can be provided by specifying the column name in the `truvari vcf2df` DataFrame. Every feature MUST be
