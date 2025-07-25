@@ -42,7 +42,6 @@ def get_scores(df, state="state", features=["svtype", "szbin"], min_obs=10):
             logging.debug("Fitered Bins\n%s", str(all_cont_obs.T[filtered]))
 
     cont_obs = all_cont_obs.T[~filtered].T
-
     chi, pval, dof, exp = chi2_contingency(cont_obs)
     score = (np.sign(cont_obs.values[1] - exp[1])) * \
             (cont_obs.values[1] - exp[1])**2 / exp[1]
