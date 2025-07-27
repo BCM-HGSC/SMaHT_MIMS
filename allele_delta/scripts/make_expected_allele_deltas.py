@@ -2,8 +2,10 @@ import truvari
 import numpy
 import pysam
 
-in_vcf = "/Users/english/code/SMaHT_MIMS/benchmark_v1.1/smaht.single.nophab.vcf.gz"
-in_bed = "../running_qdpi/adotto.v2.ns1nointerautosome.mimstier1.bed.gz"
+#in_vcf = "/Users/english/code/SMaHT_MIMS/benchmark_v2/smaht_mims_sv_v2_easy.vcf.gz"
+in_vcf = "/Users/english/code/SMaHT_MIMS/benchmark_v2/test/easy.with.small.vcf.gz"
+#in_bed = "/Users/english/code/SMaHT_MIMS/allele_delta/running_qdpi/adotto.v2.ns1nointer.bed.gz"
+in_bed = "/Users/english/code/SMaHT_MIMS/allele_delta/data/adotto.v2.ns1nointerautosome.mimsEXnodense.bed.gz"
 
 vcf = truvari.VariantFile(in_vcf, 'r')
 

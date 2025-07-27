@@ -97,7 +97,7 @@ if __name__ == '__main__':
     # would presumably be captured by the variant. Then we can post-filter by 50bp again to remove any
     # straggler <50bp events
     params = truvari.VariantParams(sizemin=0, sizefilt=0)
-    vcf = truvari.VariantFile(sys.argv[1])
+    vcf = truvari.VariantFile(sys.argv[1], params=params)
     header = vcf.header.copy()
     header.add_line(('##INFO=<ID=NumCollapsed,Number=1,Type=Integer,'
                      'Description="Number of calls collapsed into this call by truvari">'))
@@ -113,6 +113,9 @@ if __name__ == '__main__':
         while chunk['base']:
             next_call = chunk['base'].pop(0)
             next_call.translate(header)
+            if next_call.var_size() < 45:
+                out.write(next_call)
+                continue
             idx = 0 # next call to compare to
             while idx < len(chunk['base']):
                 if match(next_call, chunk['base'][idx]):
