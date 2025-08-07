@@ -3,8 +3,7 @@ Workspace for SMaHT MIMS benchmark creation and analysis tools
 
 See `benchmark_v2` for the actual benchmark. 
 
-<a href="https://raw.githack.com/BCM-HGSC/SMaHT_MIMS/main/coverage_calculatorvaf_coverage_predictor.html">Coverage Calculator</a>
-
+<a href="https://raw.githack.com/BCM-HGSC/SMaHT_MIMS/main/coverage_calculator/vaf_coverage_predictor.html">Coverage Calculator</a>
 
 
 Terminology
