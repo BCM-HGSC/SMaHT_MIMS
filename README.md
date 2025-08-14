@@ -30,6 +30,7 @@ post-processing can be performed to find somatic-specific performance.
 Choosing a benchmark
 --------------------
 
+See all benchmark files in [benchmark_v2](benchmark_v2/README.md)
 Quick answer is to use `smaht_mims_sv_v2_easy.vcf.gz` and `smaht_mims_sv_v2_easy_regions.bed`.
 
 There are two SV VCFs, `hard` and `easy`. The `hard` VCF reports every SV from the HapMap alleles. The `easy` VCF
