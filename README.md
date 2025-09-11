@@ -21,6 +21,10 @@ single tissue. This means that you'll be relying on your SV caller to detect bot
 is different from e.g. a tumor/normal pair where a subtraction pipeline can be performed to find the tumor-specific
 mutations. 
 
+A helper script in `analysis/scripts/add_vaf.py` can add an INFO/VAF annotation to results from
+some SV callers. This is not required, but will help with downstream analysis. The script can be easily extended to
+calculate a different VAF for different callers, see the script for details.
+
 Because SVs can be highly similar (e.g. 100bp germline homozygous insertion and 105bp somatic insertion at the same 
 mosaic locus), it is important that all SVs are processed together to ensure that the best matching SVs are found. The
 SMaHT MIMS SV benchmark contains the germline and somatic mutations in a single VCF. Therefore, your comparison set of
@@ -56,3 +60,55 @@ to multiple baseline calls), and `ac` is only relevant for germline callers with
 
 Optionally, `--dup-to-ins` can be used to attempt to match comparison callsets' `<DUP>` into `<INS>`. By default,
 Truvari will compare BNDs to symbolic and resolved SVs. BNDs can optionally be excluded with `--bnddist -1`.
+
+```bash
+truvari bench -b benchmark_v2/smaht_mims_sv_v2_easy.vcf.gz
+    --includebed benchmark_v2/smaht_mims_sv_v2_easy_regions.bed
+    -o result_dir/
+```
+Calculating Somatic Recall
+--------------------------
+MIMS was designed for single-sample SV mosaicism benchmarking. This means we expect most tools to be operating on a
+single BAM and producing a single VCF, within which the germline and somatic SVs are side-by-side. The MIMS VCFs
+also contain the germline and somatic SVs side-by-side. We then let truvari find the optimal matches between
+baseline/comparison SVs before post-filtering to calculate performance of the somatic stratifications.
+
+To calculate somatic recall, one simply needs to subset the baseline SVs to those with a `INFO/VAF[1]` less than 0.25.
+One way to do this is to take advantage of `truvari vcf2df` by running:
+
+```bash
+truvari vcf2df -i -f -b result_dir/ result_dir/data.jl
+```
+
+This will turn your benchmarking result into a pandas DataFrame. Then, a simple python script can calculate the somatic
+recall.
+```python
+import joblib
+data = joblib.load("result_dir/data.jl")
+somatic_base = data[data['state'].isin(['tpbase', 'fn']) & (data['VAF_alt'] < 0.25)]
+counts = somatic_base['state'].value_counts()
+print("TP:" counts['tp'])
+print("FN:", counts['fn'])
+print("Precision:", counts['tpbase'] / len(somatic_comp))
+```
+
+To calculate somatic precision, we need to rely on the comparison SVs' VAF annotations. Again, the script 
+`analysis/scripts/make_mosaic_summary.py` can add `INFO/VAF` annotations. Assuming they're inside the comparison VCF, we
+can calculate somatic precision as:
+
+```python
+somatic_comp = data[data['state'].isin(['tp', 'fp']) & (data['VAF_alt'] < 0.25)]
+counts = somatic_comp['state'].value_counts()
+print("TP:" counts['tp'])
+print("FP:", counts['fp'])
+print("Precision:", counts['tp'] / len(somatic_comp))
+```
+
+Automatic Stratification Performance
+------------------------------------
+
+Annotations inside the MIMS VCFs allow one to run Truvari's StratP test. See [documentation](https://github.com/ACEnglish/truvari/wiki/Stratp-Test)
+for details. Generate a stratification report of a result's recall performance:
+```bash
+truvari stratp --preset mims result_dir/
+```
