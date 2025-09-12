@@ -16,10 +16,7 @@ truvari bench -f ${reference} -b ${baseline} --includebed ${bed} -c ${comp} -o r
 Preparing your input
 --------------------
 
-The SMaHT MIMS is a benchmark for SV mosaicism. It assumes you'll be working on finding somatic mutations within e.g. a
-single tissue. This means that you'll be relying on your SV caller to detect both germline and somatic mutations. This
-is different from e.g. a tumor/normal pair where a subtraction pipeline can be performed to find the tumor-specific
-mutations. 
+The SMaHT MIMS is a benchmark for SV mosaicism, providing both germline calls and somatic calls down to 0.25%. We present workflows for evaluating SV callers, applicable to tools that detect all SVs as well as those focused specifically on somatic SV detection.
 
 A helper script in `analysis/scripts/add_vaf.py` can add an INFO/VAF annotation to results from
 some SV callers. This is not required, but will help with downstream analysis. The script can be easily extended to
